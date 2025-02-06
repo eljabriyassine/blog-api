@@ -12,7 +12,8 @@ export class UserEntity {
   @Column({ unique: true })
   username: string;
 
-  @Column()
+  //email should be a valid email
+  @Column({ unique: true })
   email: string;
 
   @Column()

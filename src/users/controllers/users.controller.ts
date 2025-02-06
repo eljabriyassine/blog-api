@@ -11,6 +11,7 @@ import { UsersService } from '../service/users.service';
 import { User, UserRole } from '../models/user.interface';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { get } from 'http';
+import { LoginUserDto } from '../dto/user.login-dto';
 
 @Controller('users')
 export class UsersController {
@@ -34,6 +35,11 @@ export class UsersController {
   @Post()
   createUser(@Body() userDto: CreateUserDto): Promise<User> {
     return this.usersService.createUser(userDto);
+  }
+
+  @Post('/login')
+  login(@Body() loginUserDto: LoginUserDto): Promise<string> {
+    return this.usersService.login(loginUserDto);
   }
 
   @Patch(':id/role')

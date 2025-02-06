@@ -10,6 +10,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 
 import { UserEntity } from '../models/user.entity';
 import { User, UserRole } from '../models/user.interface';
+import { LoginUserDto } from '../dto/user.login-dto';
 
 @Injectable()
 export class UsersService {
@@ -186,9 +187,47 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const { password, ...result } = user;
+    const { id, password, ...result } = user;
     return result;
   }
+
+  async login(loginUserDto: LoginUserDto): Promise<string> {
+    if (!loginUserDto.email || !loginUserDto.password) {
+      throw new NotFoundException('Email and password are required');
+    }
+    const validUser = await this.validateUser(
+      loginUserDto.email,
+      loginUserDto.password,
+    );
+    if (validUser) {
+      return this.authService.generateJWT(validUser);
+    } else {
+      return 'Wrong Credentials';
+    }
+  }
+
+  validateUser = async (email: string, password: string): Promise<User> => {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+
+    if (!user.password) {
+      throw new NotFoundException('Password is required');
+    }
+
+    const isPasswordValid = await this.authService.comparePasswordHash(
+      password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new NotFoundException('Invalid password');
+    }
+
+    return user;
+  };
 
   validateUUID = (id: string): void => {
     const uuidRegex =
