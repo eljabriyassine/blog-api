@@ -68,11 +68,11 @@ export class UsersService {
     return result;
   }
 
-  async createUser(CreateUserDto: CreateUserDto): Promise<User> {
+  async register(createUserDto: CreateUserDto): Promise<User> {
     let existingUser: UserEntity | null;
 
     existingUser = await this.userRepository.findOne({
-      where: { email: CreateUserDto.email },
+      where: { email: createUserDto.email },
     });
 
     if (existingUser) {
@@ -80,21 +80,25 @@ export class UsersService {
     }
 
     existingUser = await this.userRepository.findOne({
-      where: { username: CreateUserDto.username },
+      where: { username: createUserDto.username },
     });
     if (existingUser) {
       throw new NotFoundException('Username already exists');
     }
 
     // Validate password
-    if (CreateUserDto.password) {
+    if (createUserDto.password) {
       // Hash password before saving
-      CreateUserDto.password = await this.authService.hashPassword(
-        CreateUserDto.password,
+      createUserDto.password = await this.authService.hashPassword(
+        createUserDto.password,
       );
     }
 
-    const savedUser = await this.userRepository.save(CreateUserDto);
+    if (!createUserDto.role) {
+      createUserDto.role = UserRole.USER;
+    }
+
+    const savedUser = await this.userRepository.save(createUserDto);
 
     const { id, password, ...result } = savedUser;
 

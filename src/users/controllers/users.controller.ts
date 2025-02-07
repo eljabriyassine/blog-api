@@ -37,9 +37,9 @@ export class UsersController {
     return this.usersService.findUserByEmailOrUsername(query);
   }
 
-  @Post()
-  createUser(@Body() userDto: CreateUserDto): Promise<User> {
-    return this.usersService.createUser(userDto);
+  @Post('/register')
+  register(@Body() userDto: CreateUserDto): Promise<User> {
+    return this.usersService.register(userDto);
   }
 
   @Post('/login')
