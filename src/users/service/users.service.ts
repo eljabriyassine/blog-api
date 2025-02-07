@@ -1,4 +1,8 @@
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
@@ -11,6 +15,10 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserEntity } from '../models/user.entity';
 import { User, UserRole } from '../models/user.interface';
 import { LoginUserDto } from '../dto/user.login-dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { hasRoles } from 'src/auth/decorator/roles.decorator';
+import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -125,7 +133,6 @@ export class UsersService {
       }
     }
 
-    // Hash password if it's being updated
     if (updateUserDto.password) {
       updateUserDto.password = await this.authService.hashPassword(
         updateUserDto.password,
@@ -162,7 +169,10 @@ export class UsersService {
     return { message: 'User successfully deleted' };
   }
 
-  async changeUserRole(userId: string, newRole: UserRole): Promise<User> {
+  async changeUserRole(
+    userId: string,
+    newRole: UpdateUserRoleDto,
+  ): Promise<User> {
     if (!userId) {
       throw new NotFoundException('No user ID provided');
     }
@@ -173,7 +183,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    user.role = newRole;
+    user.role = newRole.role;
     await this.userRepository.save(user);
 
     const { password, ...result } = user;
@@ -191,19 +201,24 @@ export class UsersService {
     return result;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<string> {
+  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
     if (!loginUserDto.email || !loginUserDto.password) {
-      throw new NotFoundException('Email and password are required');
+      throw new BadRequestException('Email and password are required');
     }
+
     const validUser = await this.validateUser(
       loginUserDto.email,
       loginUserDto.password,
     );
-    if (validUser) {
-      return this.authService.generateJWT(validUser);
-    } else {
-      return 'Wrong Credentials';
+
+    if (!validUser) {
+      throw new UnauthorizedException('Wrong credentials'); // Unauthorized for login failure
     }
+
+    // Generate and return the JWT token
+    const token = await this.authService.generateJWT(validUser);
+
+    return { access_token: token };
   }
 
   validateUser = async (email: string, password: string): Promise<User> => {

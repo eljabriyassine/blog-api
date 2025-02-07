@@ -26,6 +26,9 @@ export class RolesGuard implements CanActivate {
       ? await this.userService.findUserById(user.id)
       : null;
 
+    if (!user) {
+      return false;
+    }
     // Check if user has the role
     if (userData) {
       const hasRole = roles.indexOf(userData.role || '') > -1;
