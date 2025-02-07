@@ -8,7 +8,6 @@ import { JwtStrategy } from './guards/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  // controllers: [AuthController],
   imports: [
     forwardRef(() => UsersModule),
     JwtModule.registerAsync({
