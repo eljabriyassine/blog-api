@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRole } from './user.interface';
+import { PostEntity } from 'src/post/models/post.entity';
 
-@Entity()
+@Entity({ name: 'user' })
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -21,6 +22,12 @@ export class UserEntity {
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
+
+  @OneToMany(
+		() => PostEntity,
+		(post: PostEntity) => post.user,
+	)
+	posts: PostEntity[];
 
   @BeforeInsert()
   emailToLowerCase() {
