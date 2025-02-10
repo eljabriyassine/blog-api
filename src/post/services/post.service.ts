@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from 'src/post/models/post.entity';
@@ -6,6 +10,7 @@ import { CreatePostDto } from '../dto/create-post-dto';
 import { PostResponseDto } from '../dto/post-response-dto';
 import { UpdatePostDto } from '../dto/update-post-dto';
 import { UsersService } from 'src/users/service/users.service';
+import { UserEntity } from 'src/users/models/user.entity';
 
 @Injectable()
 export class PostService {
@@ -13,17 +18,19 @@ export class PostService {
     @InjectRepository(PostEntity)
     private readonly postRepository: Repository<PostEntity>,
 
-    private readonly userService:UsersService,
+    private readonly userService: UsersService,
   ) {}
 
   // CREATE: Add a new post
   async createPost(
     createPostDto: CreatePostDto,
-    userId: string,
+    user: UserEntity,
   ): Promise<PostResponseDto> {
-    const user = await this.userService.findUserById( userId );
-    if (!user) {
-      throw new Error('User not found');
+    const existPost = await this.postRepository.findOne({
+      where: { title: createPostDto.title },
+    });
+    if (existPost) {
+      throw new ConflictException('title already exists');
     }
 
     const post = this.postRepository.create({
@@ -36,13 +43,11 @@ export class PostService {
     return this.mapToPostResponseDto(post);
   }
 
-  // READ: Get all posts
   async getAllPosts(): Promise<PostResponseDto[]> {
     const posts = await this.postRepository.find({ relations: ['user'] });
     return posts.map((post) => this.mapToPostResponseDto(post));
   }
 
-  // READ: Get a single post by ID
   async getPostById(postId: string): Promise<PostResponseDto> {
     const post = await this.postRepository.findOne({
       where: { id: postId },
@@ -54,7 +59,6 @@ export class PostService {
     return this.mapToPostResponseDto(post);
   }
 
-  // UPDATE: Update an existing post
   async updatePost(
     postId: string,
     updatePostDto: UpdatePostDto,
