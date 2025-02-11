@@ -17,8 +17,6 @@ export class PostService {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postRepository: Repository<PostEntity>,
-
-    private readonly userService: UsersService,
   ) {}
 
   // CREATE: Add a new post
