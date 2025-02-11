@@ -6,11 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { User, UserRole } from '../models/user.interface';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { get } from 'http';
+import { LoginUserDto } from '../dto/user.login-dto';
+import { hasRoles } from 'src/auth/decorator/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 
 @Controller('users')
 export class UsersController {
@@ -31,15 +37,22 @@ export class UsersController {
     return this.usersService.findUserByEmailOrUsername(query);
   }
 
-  @Post()
-  createUser(@Body() userDto: CreateUserDto): Promise<User> {
-    return this.usersService.createUser(userDto);
+  @Post('/register')
+  register(@Body() userDto: CreateUserDto): Promise<User> {
+    return this.usersService.register(userDto);
   }
 
-  @Patch(':id/role')
+  @Post('/login')
+  login(@Body() loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+    return this.usersService.login(loginUserDto);
+  }
+
+  @hasRoles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id')
   changeUserRole(
     @Param('id') id: string,
-    @Body('role') role: UserRole,
+    @Body('role') role: UpdateUserRoleDto,
   ): Promise<User> {
     return this.usersService.changeUserRole(id, role);
   }

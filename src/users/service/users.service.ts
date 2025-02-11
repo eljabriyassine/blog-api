@@ -1,4 +1,8 @@
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
@@ -10,6 +14,11 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 
 import { UserEntity } from '../models/user.entity';
 import { User, UserRole } from '../models/user.interface';
+import { LoginUserDto } from '../dto/user.login-dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { hasRoles } from 'src/auth/decorator/roles.decorator';
+import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -59,11 +68,11 @@ export class UsersService {
     return result;
   }
 
-  async createUser(CreateUserDto: CreateUserDto): Promise<User> {
+  async register(createUserDto: CreateUserDto): Promise<User> {
     let existingUser: UserEntity | null;
 
     existingUser = await this.userRepository.findOne({
-      where: { email: CreateUserDto.email },
+      where: { email: createUserDto.email },
     });
 
     if (existingUser) {
@@ -71,21 +80,25 @@ export class UsersService {
     }
 
     existingUser = await this.userRepository.findOne({
-      where: { username: CreateUserDto.username },
+      where: { username: createUserDto.username },
     });
     if (existingUser) {
       throw new NotFoundException('Username already exists');
     }
 
     // Validate password
-    if (CreateUserDto.password) {
+    if (createUserDto.password) {
       // Hash password before saving
-      CreateUserDto.password = await this.authService.hashPassword(
-        CreateUserDto.password,
+      createUserDto.password = await this.authService.hashPassword(
+        createUserDto.password,
       );
     }
 
-    const savedUser = await this.userRepository.save(CreateUserDto);
+    if (!createUserDto.role) {
+      createUserDto.role = UserRole.USER;
+    }
+
+    const savedUser = await this.userRepository.save(createUserDto);
 
     const { id, password, ...result } = savedUser;
 
@@ -124,7 +137,6 @@ export class UsersService {
       }
     }
 
-    // Hash password if it's being updated
     if (updateUserDto.password) {
       updateUserDto.password = await this.authService.hashPassword(
         updateUserDto.password,
@@ -161,7 +173,10 @@ export class UsersService {
     return { message: 'User successfully deleted' };
   }
 
-  async changeUserRole(userId: string, newRole: UserRole): Promise<User> {
+  async changeUserRole(
+    userId: string,
+    newRole: UpdateUserRoleDto,
+  ): Promise<User> {
     if (!userId) {
       throw new NotFoundException('No user ID provided');
     }
@@ -172,7 +187,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    user.role = newRole;
+    user.role = newRole.role;
     await this.userRepository.save(user);
 
     const { password, ...result } = user;
@@ -186,9 +201,52 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const { password, ...result } = user;
+    const { id, password, ...result } = user;
     return result;
   }
+
+  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+    if (!loginUserDto.email || !loginUserDto.password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
+    const validUser = await this.validateUser(
+      loginUserDto.email,
+      loginUserDto.password,
+    );
+
+    if (!validUser) {
+      throw new UnauthorizedException('Wrong credentials'); // Unauthorized for login failure
+    }
+
+    // Generate and return the JWT token
+    const token = await this.authService.generateJWT(validUser);
+
+    return { access_token: token };
+  }
+
+  validateUser = async (email: string, password: string): Promise<User> => {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+
+    if (!user.password) {
+      throw new NotFoundException('Password is required');
+    }
+
+    const isPasswordValid = await this.authService.comparePasswordHash(
+      password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new NotFoundException('Invalid password');
+    }
+
+    return user;
+  };
 
   validateUUID = (id: string): void => {
     const uuidRegex =
