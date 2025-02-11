@@ -6,10 +6,12 @@ import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { JwtStrategy } from './guards/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
+import { PostService } from 'src/post/services/post.service';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
+    forwardRef(() => PostService),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

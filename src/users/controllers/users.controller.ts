@@ -11,7 +11,6 @@ import {
 import { UsersService } from '../service/users.service';
 import { User, UserRole } from '../models/user.interface';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { get } from 'http';
 import { LoginUserDto } from '../dto/user.login-dto';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
