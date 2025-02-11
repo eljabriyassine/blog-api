@@ -6,7 +6,7 @@ import { PostEntity } from './models/post.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostEntity]), UsersModule],
+  imports: [TypeOrmModule.forFeature([PostEntity])],
   controllers: [PostController],
   providers: [PostService],
   exports: [PostService],
