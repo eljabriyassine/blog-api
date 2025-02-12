@@ -18,6 +18,7 @@ export class PostEntity {
   @Column()
   description: string;
 
+  @Column({ default: '' })
   @Column()
   content: string;
 
