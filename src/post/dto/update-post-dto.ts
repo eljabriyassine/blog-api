@@ -19,6 +19,14 @@ export class UpdatePostDto {
   description?: string;
 
   @ApiPropertyOptional({
+    description: 'The new content of the post',
+    example: 'Updated content of the post.',
+  })
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @ApiPropertyOptional({
     description: 'The new image URL associated with the post',
     example: 'https://example.com/new-image.jpg',
   })

@@ -19,6 +19,14 @@ export class CreatePostDto {
   description: string;
 
   @ApiProperty({
+    description: 'The content of the post',
+    example: 'This is a post content.',
+  })
+  @IsNotEmpty()
+  @IsString()
+  content: string;
+
+  @ApiProperty({
     description: 'The image URL associated with the post',
     example: 'https://example.com/image.jpg',
   })

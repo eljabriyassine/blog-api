@@ -89,6 +89,7 @@ export class PostService {
       id: post.id,
       title: post.title,
       description: post.description,
+      content: post.content,
       imgUrl: post.imgUrl,
       userId: post.user.id,
       createdAt: post.createdAt,

@@ -19,6 +19,9 @@ export class PostEntity {
   description: string;
 
   @Column()
+  content: string;
+
+  @Column()
   @Column({ default: '' })
   imgUrl: string;
 
