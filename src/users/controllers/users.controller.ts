@@ -42,7 +42,9 @@ export class UsersController {
   }
 
   @Post('/login')
-  login(@Body() loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+  login(
+    @Body() loginUserDto: LoginUserDto,
+  ): Promise<{ access_token: string } | { message: string }> {
     return this.usersService.login(loginUserDto);
   }
 

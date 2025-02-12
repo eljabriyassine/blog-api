@@ -94,10 +94,6 @@ export class UsersService {
       );
     }
 
-    if (!createUserDto.role) {
-      createUserDto.role = UserRole.USER;
-    }
-
     const savedUser = await this.userRepository.save(createUserDto);
 
     const { id, password, ...result } = savedUser;
@@ -205,7 +201,9 @@ export class UsersService {
     return result;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+  async login(
+    loginUserDto: LoginUserDto,
+  ): Promise<{ access_token: string } | { message: string }> {
     if (!loginUserDto.email || !loginUserDto.password) {
       throw new BadRequestException('Email and password are required');
     }
@@ -216,7 +214,7 @@ export class UsersService {
     );
 
     if (!validUser) {
-      throw new UnauthorizedException('Wrong credentials'); // Unauthorized for login failure
+      throw new NotFoundException('Wrong credentials'); // Unauthorized for login failure
     }
 
     // Generate and return the JWT token
@@ -229,11 +227,11 @@ export class UsersService {
     const user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('User not found');
     }
 
     if (!user.password) {
-      throw new NotFoundException('Password is required');
+      throw new NotFoundException('Wrong password');
     }
 
     const isPasswordValid = await this.authService.comparePasswordHash(
