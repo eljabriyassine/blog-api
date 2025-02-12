@@ -93,6 +93,7 @@ export class PostService {
       userId: post.user.id,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
+      userName: post.user.name,
     };
   }
 }

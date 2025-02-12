@@ -19,6 +19,7 @@ export class PostEntity {
   description: string;
 
   @Column()
+  @Column({ default: '' })
   imgUrl: string;
 
   @Column({ default: new Date() })
@@ -27,8 +28,8 @@ export class PostEntity {
   @Column({ default: new Date() })
   updatedAt: Date;
 
-  @Column() // Explicitly defining the userId column
-  userId: string; // Adjust to match the type of the user ID (e.g., string or uuid)
+  @Column()
+  userId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

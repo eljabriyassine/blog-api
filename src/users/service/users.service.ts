@@ -203,7 +203,7 @@ export class UsersService {
 
   async login(
     loginUserDto: LoginUserDto,
-  ): Promise<{ access_token: string } | { message: string }> {
+  ): Promise<{ user: User; access_token: string } | { message: string }> {
     if (!loginUserDto.email || !loginUserDto.password) {
       throw new BadRequestException('Email and password are required');
     }
@@ -217,10 +217,12 @@ export class UsersService {
       throw new NotFoundException('Wrong credentials'); // Unauthorized for login failure
     }
 
-    // Generate and return the JWT token
-    const token = await this.authService.generateJWT(validUser);
+    const { password, ...result } = validUser;
 
-    return { access_token: token };
+    // Generate and return the JWT token
+    const token = await this.authService.generateJWT(result);
+
+    return { user: result, access_token: token };
   }
 
   validateUser = async (email: string, password: string): Promise<User> => {

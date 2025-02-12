@@ -42,4 +42,10 @@ export class PostResponseDto {
     example: '2025-02-08T14:23:00Z',
   })
   updatedAt: Date;
+
+  @ApiProperty({
+    description: 'The name of the user who created the post',
+    example: 'John Doe',
+  })
+  userName: string;
 }
