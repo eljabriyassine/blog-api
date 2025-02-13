@@ -1,99 +1,230 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Blog API Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is the backend service for the Blog API, built with NestJS and PostgreSQL. It handles user authentication, post management, and user roles, ensuring a secure and scalable blogging platform.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technologies Used
+- **NestJS** – A progressive Node.js framework for building efficient backend services.
+- **TypeORM** – An ORM for handling database interactions with PostgreSQL.
+- **PostgreSQL** – A powerful, open-source relational database.
+- **JWT (JSON Web Token)** – Used for authentication and authorization.
+- **Multer** – Middleware for handling file uploads.
+- **Railway** – A cloud platform for seamless backend deployment.
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## Project Structure
+```
+backend/
+│── src/
+│   ├── auth/             # Authentication module (login, JWT, roles)
+│   ├── post/             # Post-related routes (CRUD, image uploads)
+│   ├── users/            # User-related routes (signup, roles, profile)
+│   ├── main.ts           # Entry point of the application
+│── .env                  # Environment variables (DB connection, JWT secret)
+│── package.json          # Project dependencies and scripts
+│── README.md             # Project documentation
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+## Setup and Installation
+### 1. Clone the repository
+```sh
+git clone https://github.com/eljabriyassine/blog-api.git
+cd blog-api
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+### 2. Install dependencies
+```sh
+npm install
 ```
 
-## Deployment
+### 3. Set up environment variables
+Create a `.env` file in the root directory and configure the following:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
-```bash
-$ npm install -g mau
-$ mau deploy
+
+### 4. Start the application
+```sh
+npm run start
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Deployment on Railway
+1. Push your code to a GitHub repository.
+2. Go to [Railway.app](https://railway.app/) and create a new project.
+3. Connect your GitHub repository and deploy the service.
+4. Add environment variables (DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, JWT_SECRET) in Railway’s settings.
+5. Railway will automatically build and deploy your NestJS app.
 
-## Resources
+## API Endpoints
+### **Auth Routes**
+- **POST** `/auth/login` – User login
+- **POST** `/auth/logout` – User logout
+- **GET** `/auth/user` – Get authenticated user details (Requires JWT authentication)
 
-Check out a few resources that may come in handy when working with NestJS:
+### **User Routes**
+- **GET** `/users/all` – Retrieve all users
+- **GET** `/users/:id` – Retrieve a specific user
+- **GET** `/users/search/:query` – Search users by email or username
+- **POST** `/users/register` – User registration
+- **POST** `/users/login` – User login
+- **PATCH** `/users/:id` – Change user role (Admin only)
+- **DELETE** `/users/:id` – Delete a user
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### **Post Routes**
+- **POST** `/posts` – Create a new post (Requires JWT authentication)
+- **GET** `/posts` – Retrieve all posts
+- **GET** `/posts/:id` – Retrieve a specific post
+- **PUT** `/posts/:id` – Update a post (Requires JWT authentication & ownership)
+- **DELETE** `/posts/:id` – Delete a post (Requires JWT authentication & ownership)
 
 ## License
+**Copyright (c) 2025 Gomobile, Morocco, Casablanca.** All rights reserved.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This software and its source code (the "Software") are the exclusive property of Gomobile, Morocco, Casablanca. No part of this Software, in whole or in part, may be used, reproduced, disclosed, modified, or distributed without prior written permission from Gomobile.
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. UNAUTHORIZED USE, INCLUDING ATTEMPTS TO REVERSE ENGINEER, IS STRICTLY PROHIBITED.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Blog API Backend
+
+## Project Description
+The **Blog API Backend** is a RESTful API that allows users to create, read, update, and delete blog posts. It provides user authentication, comment functionality, and role-based access control. Built with **Node.js**, **Nest.js, and **Postgress**, this API ensures scalability and efficiency.
+
+## Table of Contents
+1. [Installation](#installation)
+2. [Usage](#usage)
+3. [API Endpoints](#api-endpoints)
+4. [Deployment](#deployment)
+5. [Authentication](#authentication)
+6. [Credits](#credits)
+7. [License](#license)
+8. [Contributing](#contributing)
+9. [Testing](#testing)
+
+## Installation
+To set up the project locally:
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/blog-api-backend.git
+   cd blog-api-backend
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Create a `.env` file and add the required environment variables:
+  ```env
+  # Database Configuration
+  DB_HOST=localhost
+  DB_PORT=5432
+  DB_USERNAME=your_db_username
+  DB_PASSWORD=your_db_password
+  DB_NAME=your_db_name
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key
+
+# Other settings
+NODE_ENV=development
+```
+4. Start the server:
+   ```sh
+   npm start
+   ```
+
+## Usage
+1. Make API requests using tools like **Postman** or **cURL**.
+2. Authenticate using JWT tokens.
+3. CRUD operations available for **users, posts, and comments**.
+
+### Example Request (Creating a Blog Post)
+```sh
+POST /api/posts
+Headers: { "Authorization": "Bearer YOUR_JWT_TOKEN" }
+Body:
+{
+  "title": "My First Blog Post",
+  "content": "This is the content of the post.",
+}
+```
+
+### Response:
+```json
+{
+  "id": "6123456789abcdef",
+  "title": "My First Blog Post",
+  "content": "This is the content of the post.",
+  "createdAt": "2025-02-13T12:00:00Z"
+}
+```
+
+## API Endpoints
+### **Auth Routes**
+- **POST** `/auth/login` – User login
+- **POST** `/auth/logout` – User logout
+- **GET** `/auth/user` – Get authenticated user details (Requires JWT authentication)
+
+### **User Routes**
+- **GET** `/users/all` – Retrieve all users
+- **GET** `/users/:id` – Retrieve a specific user
+- **GET** `/users/search/:query` – Search users by email or username
+- **POST** `/users/register` – User registration
+- **POST** `/users/login` – User login
+- **PATCH** `/users/:id` – Change user role (Admin only)
+- **DELETE** `/users/:id` – Delete a user
+
+### **Post Routes**
+- **POST** `/posts` – Create a new post (Requires JWT authentication)
+- **GET** `/posts` – Retrieve all posts
+- **GET** `/posts/:id` – Retrieve a specific post
+- **PUT** `/posts/:id` – Update a post (Requires JWT authentication & ownership)
+- **DELETE** `/posts/:id` – Delete a post (Requires JWT authentication & ownership)
+
+
+## Deployment
+To deploy this project:
+1. Set up a cloud database (MongoDB Atlas or another provider).
+2. Choose a cloud hosting service like **Heroku**, **Vercel**, or **AWS**.
+3. Configure environment variables in the deployment settings.
+4. Deploy using GitHub Actions or another CI/CD pipeline.
+
+## Authentication
+- Users must register and log in to receive a **JWT token**.
+- The token must be included in requests requiring authentication.
+- Role-based access ensures **only authorized users** can modify or delete posts/comments.
+
+
+
+## License
+This project is licensed under the **MIT License**. See the LICENSE file for details.
+)
+
+## Contributing
+1. Fork the repository.
+2. Create a new branch (`feature/your-feature`).
+3. Commit your changes.
+4. Push to your fork and submit a **pull request**.
+
+## Testing
+Run tests using:
+```sh
+npm test
+```
+Include unit tests for API routes to ensure functionality.
+
+---
+By following this **README**, users and contributors will have a clear understanding of how to use and contribute to the Blog API Backend project.
+
