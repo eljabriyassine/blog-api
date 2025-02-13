@@ -1,16 +1,14 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from 'src/post/models/post.entity';
 import { CreatePostDto } from '../dto/create-post-dto';
 import { PostResponseDto } from '../dto/post-response-dto';
 import { UpdatePostDto } from '../dto/update-post-dto';
-import { UsersService } from 'src/users/service/users.service';
 import { UserEntity } from 'src/users/models/user.entity';
+import * as path from 'path';
+const imageToBase64 = require('image-to-base64');
+import * as mime from 'mime-types';
 
 @Injectable()
 export class PostService {
@@ -23,6 +21,7 @@ export class PostService {
   async createPost(
     createPostDto: CreatePostDto,
     user: UserEntity,
+    file: Express.Multer.File,
   ): Promise<PostResponseDto> {
     const existPost = await this.postRepository.findOne({
       where: { title: createPostDto.title },
@@ -33,6 +32,7 @@ export class PostService {
 
     const post = this.postRepository.create({
       ...createPostDto,
+      imgUrl: `/uploads/postImages/${file.filename}`,
       user,
     });
 
@@ -43,7 +43,7 @@ export class PostService {
 
   async getAllPosts(): Promise<PostResponseDto[]> {
     const posts = await this.postRepository.find({ relations: ['user'] });
-    return posts.map((post) => this.mapToPostResponseDto(post));
+    return Promise.all(posts.map((post) => this.mapToPostResponseDto(post)));
   }
 
   async getPostById(postId: string): Promise<PostResponseDto> {
@@ -84,13 +84,32 @@ export class PostService {
   }
 
   // Helper method to map entity to response DTO
-  private mapToPostResponseDto(post: PostEntity): PostResponseDto {
+  private async mapToPostResponseDto(
+    post: PostEntity,
+  ): Promise<PostResponseDto> {
+    // Read image based on imgUrl path and convert to base64
+    const imagePath = path.join(__dirname, '..', '..', '..', post.imgUrl);
+
+    // Get the mime type based on the file extension
+    const mimeType = mime.lookup(imagePath); // This will return the mime type based on the file extension
+
+    // Read the image content and convert it to base64 asynchronously
+    let base64Image = '';
+    try {
+      base64Image = await imageToBase64(imagePath); // Image URL
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      base64Image = '';
+    }
+
     return {
       id: post.id,
       title: post.title,
       description: post.description,
       content: post.content,
-      imgUrl: post.imgUrl,
+      imgUrl: base64Image
+        ? `data:${mimeType};base64,${base64Image}`
+        : post.imgUrl, // Use base64 if available, otherwise use the original imgUrl
       userId: post.user.id,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,

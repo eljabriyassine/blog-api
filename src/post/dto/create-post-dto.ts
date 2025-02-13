@@ -25,12 +25,4 @@ export class CreatePostDto {
   @IsNotEmpty()
   @IsString()
   content: string;
-
-  @ApiProperty({
-    description: 'The image URL associated with the post',
-    example: 'https://example.com/image.jpg',
-  })
-  // @IsNotEmpty()
-  // @IsUrl()
-  imgUrl: string;
 }

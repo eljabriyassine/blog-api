@@ -8,6 +8,8 @@ import {
   Get,
   Request,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PostService } from 'src/post/services/post.service';
 import { CreatePostDto } from '../dto/create-post-dto';
@@ -16,6 +18,9 @@ import { UpdatePostDto } from '../dto/update-post-dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { OwnershipGuard } from 'src/auth/guards/owner.ship.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('posts')
 export class PostController {
@@ -24,11 +29,31 @@ export class PostController {
   // CREATE: Create a new post
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/postImages',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async createPost(
     @Request() req,
-    @Body() createPostDto: CreatePostDto,
+    @Body() body: any,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<PostResponseDto> {
-    return this.postService.createPost(createPostDto, req.user);
+    const createPostDto: CreatePostDto = {
+      title: body.title,
+      content: body.content,
+      description: body.description,
+    };
+    return this.postService.createPost(createPostDto, req.user, file);
   }
 
   // READ: Get all posts
